@@ -13,6 +13,7 @@ import { cors } from 'hono/cors';
 import { formatDataForStream, streamTextFromImage } from './lib/ai';
 import { stream, streamText } from 'hono/streaming';
 import { aiffToWav, tts } from './lib/tts';
+import { config } from './lib/config';
 
 const app = new Hono().use(
   cors({
@@ -20,11 +21,13 @@ const app = new Hono().use(
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
-    // it will cache the preflight request for 1 hour
-    // so we don't need to send the preflight request for each request
     maxAge: 3600,
   })
 );
+
+app.get('/health', (c) => {
+  return c.json({ status: 'ok', uptime: process.uptime() });
+});
 
 app.post(
   '/describe',
@@ -48,6 +51,48 @@ app.post(
   }
 );
 
+async function handleSpeakRequest(c: any, text: string) {
+  c.header('Content-Type', 'audio/wav');
+  c.header('Content-Disposition', 'inline; filename="audio.wav"');
+  c.header('Cache-Control', 'no-cache');
+  c.header('Transfer-Encoding', 'chunked');
+
+  return stream(c, async (stream) => {
+    let outputFile = '';
+    let wavFile = '';
+    try {
+      const isWin = process.platform === 'win32';
+      outputFile = path.join(os.tmpdir(), crypto.randomUUID() + (isWin ? '.wav' : '.aiff'));
+      await tts(text, outputFile);
+
+      wavFile = isWin ? outputFile : path.join(os.tmpdir(), crypto.randomUUID() + '.wav');
+      if (!isWin) {
+        await aiffToWav(outputFile, wavFile);
+      }
+
+      if (fs.existsSync(wavFile)) {
+        const readableStream = fs.createReadStream(wavFile);
+        for await (const chunk of readableStream) {
+          stream.write(chunk);
+        }
+      }
+    } catch (err) {
+      console.error('TTS synthesis error:', err);
+    } finally {
+      if (outputFile && fs.existsSync(outputFile)) {
+        try {
+          fs.unlinkSync(outputFile);
+        } catch {}
+      }
+      if (wavFile && wavFile !== outputFile && fs.existsSync(wavFile)) {
+        try {
+          fs.unlinkSync(wavFile);
+        } catch {}
+      }
+    }
+  });
+}
+
 app.get(
   '/speak',
   zValidator(
@@ -58,26 +103,7 @@ app.get(
   ),
   async (c) => {
     const { text } = c.req.valid('query');
-
-    c.header('Content-Type', 'audio/wav');
-    c.header('Content-Disposition', 'attachment; filename="audio.wav"');
-    c.header('Cache-Control', 'no-cache');
-    c.header('Transfer-Encoding', 'chunked');
-
-    return stream(c, async (stream) => {
-      const outputFile = path.join(os.tmpdir(), crypto.randomUUID() + '.aiff');
-      await tts(text, outputFile);
-      const wavFile = path.join(os.tmpdir(), crypto.randomUUID() + '.wav');
-      await aiffToWav(outputFile, wavFile);
-
-      const readableStream = fs.createReadStream(wavFile);
-      for await (const chunk of readableStream) {
-        stream.write(chunk);
-      }
-
-      fs.unlinkSync(outputFile);
-      fs.unlinkSync(wavFile);
-    });
+    return handleSpeakRequest(c, text);
   }
 );
 
@@ -91,35 +117,18 @@ app.post(
   ),
   async (c) => {
     const { text } = c.req.valid('query');
-
-    c.header('Content-Type', 'audio/wav');
-    c.header('Content-Disposition', 'attachment; filename="audio.wav"');
-    c.header('Cache-Control', 'no-cache');
-    c.header('Transfer-Encoding', 'chunked');
-
-    return stream(c, async (stream) => {
-      const outputFile = path.join(os.tmpdir(), crypto.randomUUID() + '.aiff');
-      await tts(text, outputFile);
-      const wavFile = path.join(os.tmpdir(), crypto.randomUUID() + '.wav');
-      await aiffToWav(outputFile, wavFile);
-
-      const readableStream = fs.createReadStream(wavFile);
-      for await (const chunk of readableStream) {
-        stream.write(chunk);
-      }
-
-      fs.unlinkSync(outputFile);
-      fs.unlinkSync(wavFile);
-    });
+    return handleSpeakRequest(c, text);
   }
 );
+
+const port = config.PORT;
 
 serve(
   {
     fetch: app.fetch,
-    port: 8080,
+    port,
   },
   (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
+    console.log(`Server is running on port ${info.port}`);
   }
 );
