@@ -5,6 +5,7 @@ import {
   PlayIcon,
   PlusIcon,
   TrashIcon,
+  Volume2Icon,
 } from 'lucide-react';
 import type { Route } from './+types/_index';
 import {
@@ -46,7 +47,15 @@ export default function IndexPage() {
 
   useServiceWorker('/worker.js');
 
-  const { isPlaying, isAudioLoading, play, clear } = useStreamAudio();
+  const {
+    isPlaying,
+    isAudioLoading,
+    isAutoplayBlocked,
+    play,
+    stop,
+    clear,
+    speakTextWithSpeechSynthesis,
+  } = useStreamAudio();
 
   const handleCompletionError = useCallback((error: Error) => {
     console.error('Completion error:', error);
@@ -115,10 +124,18 @@ export default function IndexPage() {
       return;
     }
 
-    const url = new URL('/speak', API_BASE_URL);
-    url.searchParams.append('text', result);
-    play(url.toString());
-  }, [rawFile, isAudioLoading, isPlaying, clear, sendCompletion, play]);
+    try {
+      const url = new URL('/speak', API_BASE_URL);
+      url.searchParams.append('text', result);
+      const audioUrl = url.toString();
+
+      // Play through backend TTS, passing result as speech synthesis fallback
+      play(audioUrl, result);
+    } catch {
+      // Fallback to browser Web Speech API
+      speakTextWithSpeechSynthesis(result);
+    }
+  }, [rawFile, isAudioLoading, isPlaying, clear, sendCompletion, play, speakTextWithSpeechSynthesis]);
 
   useEffect(() => {
     return () => {
@@ -232,12 +249,51 @@ export default function IndexPage() {
               aria-live="polite"
               className="mt-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-xs"
             >
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 block mb-2">
-                Audio Description
-              </span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  Audio Description
+                </span>
+                {completion && !isAudioLoading && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isPlaying) {
+                        stop();
+                      } else {
+                        const url = new URL('/speak', API_BASE_URL);
+                        url.searchParams.append('text', completion);
+                        play(url.toString(), completion);
+                      }
+                    }}
+                    aria-label={isPlaying ? 'Pause spoken description' : 'Read spoken description aloud'}
+                    className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-900 rounded px-1.5 py-0.5 cursor-pointer"
+                  >
+                    <Volume2Icon className="size-3.5 text-zinc-500" />
+                    <span>{isPlaying ? 'Pause Audio' : 'Listen'}</span>
+                  </button>
+                )}
+              </div>
               <p className="text-sm sm:text-base text-zinc-800 leading-relaxed break-words">
                 {completion}
               </p>
+            </div>
+          )}
+
+          {/* Prompt if autoplay was prevented by browser policy (common on iOS / mobile Safari) */}
+          {isAutoplayBlocked && completion && (
+            <div className="mt-3 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 text-xs text-amber-800">
+              <span>Autoplay was restricted by your browser.</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = new URL('/speak', API_BASE_URL);
+                  url.searchParams.append('text', completion);
+                  play(url.toString(), completion);
+                }}
+                className="font-medium underline ml-2 shrink-0 cursor-pointer text-amber-900"
+              >
+                Tap here to listen
+              </button>
             </div>
           )}
 
