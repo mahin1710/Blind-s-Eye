@@ -7,6 +7,7 @@
     "lint": "turbo run lint",
     "format:write": "prettier --write \"**/*.{ts,tsx,md}\"",
     "format:organize": "prettier --write \"**/*.{ts,tsx,md}\" --plugin=prettier-plugin-organize-imports",
+    "test": "apps\\api\\node_modules\\.bin\\tsx.cmd --test tests/compatibility.test.ts",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
