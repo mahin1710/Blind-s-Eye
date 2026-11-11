@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "check-types": "tsc --noEmit",
+    "start": "tsx src/index.ts",
     "image-to-text": "tsx scripts/image-to-text.ts"
   },
   "dependencies": {
