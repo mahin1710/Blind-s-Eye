@@ -52,7 +52,9 @@ export function useCompletion(options: UseCompletionOptions) {
           let errorMessage = 'Something went wrong';
           try {
             const data = await response.json();
-            errorMessage = data?.message || `HTTP ${response.status}: ${response.statusText}`;
+            errorMessage =
+              data?.message ||
+              `HTTP ${response.status}: ${response.statusText}`;
           } catch {
             errorMessage = `Server returned status ${response.status}`;
           }
@@ -65,7 +67,9 @@ export function useCompletion(options: UseCompletionOptions) {
         const stream = response.body;
         if (!stream) {
           setStatus('error');
-          const error = new Error('No readable response stream received from server');
+          const error = new Error(
+            'No readable response stream received from server'
+          );
           onError?.(error);
           return null;
         }

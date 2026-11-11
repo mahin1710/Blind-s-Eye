@@ -84,7 +84,10 @@ async function readStream(
 
           switch (prefix) {
             case CHAT_RESPONSE_PREFIX.message:
-              result += typeof parsedContent === 'string' ? parsedContent : String(parsedContent);
+              result +=
+                typeof parsedContent === 'string'
+                  ? parsedContent
+                  : String(parsedContent);
               await callbacks.onMessage?.(result);
               break;
             case CHAT_RESPONSE_PREFIX.details:
@@ -111,10 +114,13 @@ async function readStream(
   return result;
 }
 
-describe('Blind\'s Eye Compatibility Test Suite', () => {
+describe("Blind's Eye Compatibility Test Suite", () => {
   describe('Responsive & CSS Utilities', () => {
     it('should correctly merge conflicting Tailwind CSS classes', () => {
-      const result = cn('px-4 py-2', 'px-6', { 'text-red-500': true, 'text-blue-500': false });
+      const result = cn('px-4 py-2', 'px-6', {
+        'text-red-500': true,
+        'text-blue-500': false,
+      });
       assert.equal(result, 'py-2 px-6 text-red-500');
     });
 
@@ -125,7 +131,8 @@ describe('Blind\'s Eye Compatibility Test Suite', () => {
     });
 
     it('should verify minimum touch target sizing (min-h-[48px]) for mobile buttons', () => {
-      const buttonClasses = 'flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm';
+      const buttonClasses =
+        'flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm';
       assert.ok(buttonClasses.includes('min-h-[48px]'));
       assert.ok(buttonClasses.includes('px-4 py-3'));
     });
@@ -184,7 +191,9 @@ describe('Blind\'s Eye Compatibility Test Suite', () => {
       const encoder = new TextEncoder();
       const stream = new ReadableStream<Uint8Array>({
         start(controller) {
-          controller.enqueue(encoder.encode('d:{"tokens":42,"duration":1.2}\n'));
+          controller.enqueue(
+            encoder.encode('d:{"tokens":42,"duration":1.2}\n')
+          );
           controller.enqueue(encoder.encode('0:"Complete description."\n'));
           controller.close();
         },
@@ -203,11 +212,26 @@ describe('Blind\'s Eye Compatibility Test Suite', () => {
   });
 
   describe('CORS & Network Origin Validation', () => {
-    function isAllowedOrigin(origin: string, configuredOrigin?: string): boolean {
+    function isAllowedOrigin(
+      origin: string,
+      configuredOrigin?: string
+    ): boolean {
       if (!origin) return true;
-      if (configuredOrigin && (origin === configuredOrigin || configuredOrigin === '*')) return true;
-      if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin)) return true;
-      if (/^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin)) return true;
+      if (
+        configuredOrigin &&
+        (origin === configuredOrigin || configuredOrigin === '*')
+      )
+        return true;
+      if (
+        /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin)
+      )
+        return true;
+      if (
+        /^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(
+          origin
+        )
+      )
+        return true;
       return false;
     }
 
@@ -225,13 +249,21 @@ describe('Blind\'s Eye Compatibility Test Suite', () => {
     });
 
     it('should reject untrusted external origins unless configured', () => {
-      assert.strictEqual(isAllowedOrigin('http://malicious-website.com'), false);
-      assert.ok(isAllowedOrigin('https://blindseye.app', 'https://blindseye.app'));
+      assert.strictEqual(
+        isAllowedOrigin('http://malicious-website.com'),
+        false
+      );
+      assert.ok(
+        isAllowedOrigin('https://blindseye.app', 'https://blindseye.app')
+      );
     });
   });
 
   describe('Cross-Platform TTS Command Generation', () => {
-    function buildWindowsPowerShellScript(text: string, outputPath: string): string {
+    function buildWindowsPowerShellScript(
+      text: string,
+      outputPath: string
+    ): string {
       const safeText = text.replace(/'/g, "''");
       const safePath = outputPath.replace(/'/g, "''");
       return [
@@ -244,9 +276,12 @@ describe('Blind\'s Eye Compatibility Test Suite', () => {
     }
 
     it('should correctly escape single quotes in synthesized text', () => {
-      const script = buildWindowsPowerShellScript("It's a sunny day outside", 'C:\\temp\\audio.wav');
+      const script = buildWindowsPowerShellScript(
+        "It's a sunny day outside",
+        'C:\\temp\\audio.wav'
+      );
       assert.ok(script.includes("It''s a sunny day outside"));
-      assert.ok(script.includes("C:\\temp\\audio.wav"));
+      assert.ok(script.includes('C:\\temp\\audio.wav'));
     });
 
     it('should generate valid base64 UTF-16LE encoding for PowerShell execution', () => {
@@ -282,7 +317,16 @@ describe('Blind\'s Eye Compatibility Test Suite', () => {
   });
 
   describe('Supported Image Formats & Mobile Camera MIME Types', () => {
-    const acceptedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.gif', '.bmp'];
+    const acceptedExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      '.heic',
+      '.heif',
+      '.gif',
+      '.bmp',
+    ];
 
     function isFileSupported(fileName: string): boolean {
       const ext = fileName.slice(fileName.lastIndexOf('.')).toLowerCase();

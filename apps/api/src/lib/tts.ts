@@ -58,7 +58,10 @@ export async function tts(text: string, outputFile: string): Promise<string> {
   });
 }
 
-export async function aiffToWav(inputFile: string, outputFile: string): Promise<string> {
+export async function aiffToWav(
+  inputFile: string,
+  outputFile: string
+): Promise<string> {
   // If inputFile is already a WAV file (e.g. on Windows), copy or rename
   if (inputFile.endsWith('.wav') || inputFile === outputFile) {
     if (inputFile !== outputFile && fs.existsSync(inputFile)) {

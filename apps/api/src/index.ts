@@ -20,14 +20,23 @@ const app = new Hono().use(
     origin: (origin) => {
       // In dev or local environments, permit localhost, LAN IPs, or configured origin
       if (!origin) return '*';
-      if (config.CORS_ORIGIN && (origin === config.CORS_ORIGIN || config.CORS_ORIGIN === '*')) {
+      if (
+        config.CORS_ORIGIN &&
+        (origin === config.CORS_ORIGIN || config.CORS_ORIGIN === '*')
+      ) {
         return origin;
       }
-      if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin)) {
+      if (
+        /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin)
+      ) {
         return origin;
       }
       // Allow private / local area networks for mobile / tablet testing over Wi-Fi
-      if (/^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin)) {
+      if (
+        /^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(
+          origin
+        )
+      ) {
         return origin;
       }
       return origin;
@@ -115,10 +124,15 @@ async function handleSpeakRequest(c: any, text: string) {
     let wavFile = '';
     try {
       const isWin = process.platform === 'win32';
-      outputFile = path.join(os.tmpdir(), crypto.randomUUID() + (isWin ? '.wav' : '.aiff'));
+      outputFile = path.join(
+        os.tmpdir(),
+        crypto.randomUUID() + (isWin ? '.wav' : '.aiff')
+      );
       await tts(text, outputFile);
 
-      wavFile = isWin ? outputFile : path.join(os.tmpdir(), crypto.randomUUID() + '.wav');
+      wavFile = isWin
+        ? outputFile
+        : path.join(os.tmpdir(), crypto.randomUUID() + '.wav');
       if (!isWin) {
         await aiffToWav(outputFile, wavFile);
       }

@@ -28,7 +28,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="min-h-dvh flex flex-col bg-zinc-50 text-zinc-900 antialiased selection:bg-zinc-200 selection:text-zinc-900">
+      <body className="flex min-h-dvh flex-col bg-zinc-50 text-zinc-900 antialiased selection:bg-zinc-200 selection:text-zinc-900">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -39,8 +39,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export function HydrateFallback() {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 text-zinc-400">
-      <div className="size-6 border-2 border-zinc-300 border-t-zinc-800 rounded-full animate-spin" />
+    <div className="flex flex-1 flex-col items-center justify-center p-6 text-zinc-400">
+      <div className="size-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-800" />
     </div>
   );
 }
@@ -66,16 +66,16 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="w-full max-w-xl mx-auto px-4 py-12 flex flex-col items-center justify-center text-center">
-      <div className="w-full rounded-2xl bg-white p-6 sm:p-8 shadow-xs border border-zinc-200">
-        <h1 className="text-2xl sm:text-3xl font-semibold text-zinc-900 tracking-tight">
+    <main className="mx-auto flex w-full max-w-xl flex-col items-center justify-center px-4 py-12 text-center">
+      <div className="shadow-xs w-full rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
           {message}
         </h1>
-        <p className="mt-3 text-sm sm:text-base text-zinc-600 leading-relaxed text-balance">
+        <p className="mt-3 text-balance text-sm leading-relaxed text-zinc-600 sm:text-base">
           {details}
         </p>
         {stack && (
-          <pre className="mt-4 w-full p-3 sm:p-4 rounded-lg bg-zinc-100 text-xs text-left text-zinc-700 overflow-x-auto">
+          <pre className="mt-4 w-full overflow-x-auto rounded-lg bg-zinc-100 p-3 text-left text-xs text-zinc-700 sm:p-4">
             <code>{stack}</code>
           </pre>
         )}
@@ -83,7 +83,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="min-h-[44px] px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-colors"
+            className="min-h-[44px] rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
           >
             Reload Page
           </button>

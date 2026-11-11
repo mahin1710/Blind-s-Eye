@@ -73,7 +73,9 @@ export default function IndexPage() {
   const onDrop: OnDrop = useCallback((acceptedFiles, rejections) => {
     setErrorMessage(null);
     if (rejections.length > 0) {
-      setErrorMessage('Please select a valid image file (JPG, PNG, WebP, HEIC).');
+      setErrorMessage(
+        'Please select a valid image file (JPG, PNG, WebP, HEIC).'
+      );
       return;
     }
     const firstFile = acceptedFiles[0];
@@ -135,7 +137,15 @@ export default function IndexPage() {
       // Fallback to browser Web Speech API
       speakTextWithSpeechSynthesis(result);
     }
-  }, [rawFile, isAudioLoading, isPlaying, clear, sendCompletion, play, speakTextWithSpeechSynthesis]);
+  }, [
+    rawFile,
+    isAudioLoading,
+    isPlaying,
+    clear,
+    sendCompletion,
+    play,
+    speakTextWithSpeechSynthesis,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -156,7 +166,7 @@ export default function IndexPage() {
 
   const title = (
     <header className="text-center">
-      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
         Describe an image
       </h1>
       <p className="mt-2 text-balance text-center text-sm text-zinc-500">
@@ -166,7 +176,7 @@ export default function IndexPage() {
   );
 
   return (
-    <main className="flex-1 w-full max-w-lg mx-auto px-4 sm:px-6 py-6 sm:py-10 md:py-12 flex flex-col justify-start">
+    <main className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-start px-4 py-6 sm:px-6 sm:py-10 md:py-12">
       {title}
 
       {errorMessage && (
@@ -174,17 +184,17 @@ export default function IndexPage() {
           role="alert"
           className="mt-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm text-red-800"
         >
-          <AlertCircleIcon className="size-5 shrink-0 text-red-600 mt-0.5" />
+          <AlertCircleIcon className="mt-0.5 size-5 shrink-0 text-red-600" />
           <div className="flex-1">
             <p className="font-medium">Notice</p>
-            <p className="mt-0.5 text-xs text-red-700 leading-relaxed">
+            <p className="mt-0.5 text-xs leading-relaxed text-red-700">
               {errorMessage}
             </p>
           </div>
           <button
             type="button"
             onClick={() => setErrorMessage(null)}
-            className="text-xs text-red-600 hover:text-red-900 underline ml-2"
+            className="ml-2 text-xs text-red-600 underline hover:text-red-900"
           >
             Dismiss
           </button>
@@ -194,7 +204,7 @@ export default function IndexPage() {
       {!file ? (
         <section
           aria-label="Image upload area"
-          className="mt-6 sm:mt-8 flex flex-col"
+          className="mt-6 flex flex-col sm:mt-8"
         >
           <div
             {...getRootProps({
@@ -209,8 +219,8 @@ export default function IndexPage() {
             })}
           >
             <input {...getInputProps()} />
-            <div className="max-w-xs mx-auto flex flex-col items-center text-balance text-center">
-              <div className="flex size-10 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200/80 mb-3">
+            <div className="mx-auto flex max-w-xs flex-col items-center text-balance text-center">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full border border-zinc-200/80 bg-zinc-100">
                 <PlusIcon className="size-5 text-zinc-500" />
               </div>
               <p className="text-sm font-medium text-zinc-700">
@@ -229,15 +239,15 @@ export default function IndexPage() {
       ) : (
         <section
           aria-label="Image preview and transcription"
-          className="mt-6 sm:mt-8 flex flex-col"
+          className="mt-6 flex flex-col sm:mt-8"
         >
           {/* Responsive image preview that preserves natural aspect ratio */}
           <div className="flex items-center justify-center">
-            <div className="relative w-full max-h-[340px] sm:max-h-[400px] flex items-center justify-center overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-100/70 p-2">
+            <div className="relative flex max-h-[340px] w-full items-center justify-center overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-100/70 p-2 sm:max-h-[400px]">
               <img
                 src={file.preview}
                 alt={file.name || 'Selected image to describe'}
-                className="max-h-[320px] sm:max-h-[380px] w-auto max-w-full rounded-xl object-contain shadow-xs"
+                className="shadow-xs max-h-[320px] w-auto max-w-full rounded-xl object-contain sm:max-h-[380px]"
               />
             </div>
           </div>
@@ -247,9 +257,9 @@ export default function IndexPage() {
             <div
               role="status"
               aria-live="polite"
-              className="mt-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-xs"
+              className="shadow-xs mt-4 rounded-xl border border-zinc-200 bg-white p-4"
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                   Audio Description
                 </span>
@@ -265,15 +275,19 @@ export default function IndexPage() {
                         play(url.toString(), completion);
                       }
                     }}
-                    aria-label={isPlaying ? 'Pause spoken description' : 'Read spoken description aloud'}
-                    className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-900 rounded px-1.5 py-0.5 cursor-pointer"
+                    aria-label={
+                      isPlaying
+                        ? 'Pause spoken description'
+                        : 'Read spoken description aloud'
+                    }
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 text-xs text-zinc-600 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-900"
                   >
                     <Volume2Icon className="size-3.5 text-zinc-500" />
                     <span>{isPlaying ? 'Pause Audio' : 'Listen'}</span>
                   </button>
                 )}
               </div>
-              <p className="text-sm sm:text-base text-zinc-800 leading-relaxed break-words">
+              <p className="break-words text-sm leading-relaxed text-zinc-800 sm:text-base">
                 {completion}
               </p>
             </div>
@@ -281,7 +295,7 @@ export default function IndexPage() {
 
           {/* Prompt if autoplay was prevented by browser policy (common on iOS / mobile Safari) */}
           {isAutoplayBlocked && completion && (
-            <div className="mt-3 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 text-xs text-amber-800">
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-xs text-amber-800">
               <span>Autoplay was restricted by your browser.</span>
               <button
                 type="button"
@@ -290,7 +304,7 @@ export default function IndexPage() {
                   url.searchParams.append('text', completion);
                   play(url.toString(), completion);
                 }}
-                className="font-medium underline ml-2 shrink-0 cursor-pointer text-amber-900"
+                className="ml-2 shrink-0 cursor-pointer font-medium text-amber-900 underline"
               >
                 Tap here to listen
               </button>
@@ -298,7 +312,7 @@ export default function IndexPage() {
           )}
 
           {/* Action buttons with minimum 44px-48px touch targets */}
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+          <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
             <button
               type="button"
               aria-label="Remove image and reset"
@@ -314,12 +328,16 @@ export default function IndexPage() {
               aria-label={
                 isPlaying
                   ? 'Stop spoken description'
-                  : isAudioLoading || status === 'loading' || status === 'streaming'
-                  ? 'Generating description and audio'
-                  : 'Describe image and play audio'
+                  : isAudioLoading ||
+                      status === 'loading' ||
+                      status === 'streaming'
+                    ? 'Generating description and audio'
+                    : 'Describe image and play audio'
               }
               className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium tracking-wide text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
-              disabled={isAudioLoading || status === 'loading' || status === 'streaming'}
+              disabled={
+                isAudioLoading || status === 'loading' || status === 'streaming'
+              }
               onClick={() => {
                 if (isAudioLoading || isPlaying) {
                   clear();
@@ -328,7 +346,10 @@ export default function IndexPage() {
                 handleImageDescribe();
               }}
             >
-              {(isAudioLoading || status === 'loading' || status === 'streaming') && !isPlaying ? (
+              {(isAudioLoading ||
+                status === 'loading' ||
+                status === 'streaming') &&
+              !isPlaying ? (
                 <>
                   <Loader2Icon className="size-4 shrink-0 animate-spin" />
                   <span>

@@ -83,7 +83,10 @@ export async function readStream(
 
           switch (prefix) {
             case CHAT_RESPONSE_PREFIX.message:
-              result += typeof parsedContent === 'string' ? parsedContent : String(parsedContent);
+              result +=
+                typeof parsedContent === 'string'
+                  ? parsedContent
+                  : String(parsedContent);
               await onMessage?.(result);
               break;
             case CHAT_RESPONSE_PREFIX.details:
