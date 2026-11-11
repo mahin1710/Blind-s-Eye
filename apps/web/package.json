@@ -5,7 +5,8 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "vite preview --outDir build/client",
+    "preview": "vite preview --outDir build/client",
     "typecheck": "react-router typegen && tsc",
     "check-types": "react-router typegen && tsc --noEmit"
   },
