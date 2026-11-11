@@ -17,8 +17,23 @@ import { config } from './lib/config';
 
 const app = new Hono().use(
   cors({
-    origin: ['http://localhost:5173'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    origin: (origin) => {
+      // In dev or local environments, permit localhost, LAN IPs, or configured origin
+      if (!origin) return '*';
+      if (config.CORS_ORIGIN && (origin === config.CORS_ORIGIN || config.CORS_ORIGIN === '*')) {
+        return origin;
+      }
+      if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin)) {
+        return origin;
+      }
+      // Allow private / local area networks for mobile / tablet testing over Wi-Fi
+      if (/^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin)) {
+        return origin;
+      }
+      return origin;
+    },
+    allowHeaders: ['Content-Type', 'Authorization', 'Range', 'Accept'],
+    exposeHeaders: ['Content-Range', 'Accept-Ranges', 'Content-Length'],
     allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     maxAge: 3600,

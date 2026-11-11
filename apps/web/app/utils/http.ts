@@ -30,9 +30,10 @@ export async function httpCall<ResponseType = AppResponse>(
   options?: HttpOptionsType
 ): Promise<ApiReturn<ResponseType>> {
   try {
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8080';
     const url = _url.startsWith('http')
       ? _url
-      : `${import.meta.env.VITE_API_URL}${_url}`;
+      : `${apiBase}${_url.startsWith('/') ? _url : `/${_url}`}`;
     const isMultiPartFormData = options?.body instanceof FormData;
 
     const headers = new Headers({

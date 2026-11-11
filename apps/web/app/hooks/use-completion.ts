@@ -26,10 +26,15 @@ export function useCompletion(options: UseCompletionOptions) {
         abortControllerRef.current?.abort();
         abortControllerRef.current = new AbortController();
 
+        const isFormData = requestOptions.body instanceof FormData;
         const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
           ...(requestOptions.headers as Record<string, string>),
         };
+
+        // When sending FormData, the browser must generate the Content-Type with its unique boundary
+        if (!isFormData && !headers['Content-Type']) {
+          headers['Content-Type'] = 'application/json';
+        }
 
         const body = requestOptions.body
           ? requestOptions.body
