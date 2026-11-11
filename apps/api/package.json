@@ -1,0 +1,29 @@
+{
+  "name": "@pictalk-ai/api",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "image-to-text": "tsx scripts/image-to-text.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.3.23",
+    "@aws-sdk/client-s3": "^3.845.0",
+    "@aws-sdk/s3-request-presigner": "^3.845.0",
+    "@hono/node-server": "^1.16.0",
+    "@hono/zod-validator": "^0.7.1",
+    "ai": "^4.3.19",
+    "dotenv": "^17.2.0",
+    "hono": "^4.8.5",
+    "ollama": "^0.5.16",
+    "ollama-ai-provider": "^1.2.0",
+    "openai": "^5.9.2",
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.14",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
