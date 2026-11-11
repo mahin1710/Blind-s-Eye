@@ -19,34 +19,50 @@ export function useCompletion(options: UseCompletionOptions) {
   >('idle');
 
   const sendCompletion = useCallback(
-    async (prompt: string, options: RequestInit = {}) => {
+    async (prompt: string, requestOptions: RequestInit = {}) => {
       try {
         setStatus('loading');
         setCompletion(null);
         abortControllerRef.current?.abort();
         abortControllerRef.current = new AbortController();
 
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          ...(requestOptions.headers as Record<string, string>),
+        };
+
+        const body = requestOptions.body
+          ? requestOptions.body
+          : JSON.stringify({ prompt });
+
         const response = await fetch(endpoint, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-          },
-          body: JSON.stringify({ prompt }),
-          ...options,
+          headers,
+          body,
+          ...requestOptions,
           signal: abortControllerRef.current?.signal,
         });
 
         if (!response.ok) {
-          const data = await response.json();
+          let errorMessage = 'Something went wrong';
+          try {
+            const data = await response.json();
+            errorMessage = data?.message || `HTTP ${response.status}: ${response.statusText}`;
+          } catch {
+            errorMessage = `Server returned status ${response.status}`;
+          }
           setStatus('error');
-          throw new Error(data?.message || 'Something went wrong');
+          const error = new Error(errorMessage);
+          onError?.(error);
+          return null;
         }
 
         const stream = response.body;
         if (!stream) {
           setStatus('error');
-          throw new Error('Something went wrong');
+          const error = new Error('No readable response stream received from server');
+          onError?.(error);
+          return null;
         }
 
         let result: string | null = null;
@@ -74,17 +90,16 @@ export function useCompletion(options: UseCompletionOptions) {
         return result;
       } catch (error) {
         if (abortControllerRef.current?.signal.aborted) {
-          // we don't want to show error if the user stops the chat
-          // so we just return
-          return;
+          return null;
         }
 
-        onError?.(error as Error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        onError?.(err);
         setStatus('error');
         return null;
       }
     },
-    [endpoint, onError]
+    [endpoint, onError, onFinish]
   );
 
   const stop = useCallback(() => {
