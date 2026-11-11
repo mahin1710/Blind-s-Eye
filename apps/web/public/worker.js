@@ -12,35 +12,47 @@ self.addEventListener("fetch", (event) => {
   if (request.method === "GET" && request.url.includes("/speak")) {
     const originalUrl = request.url;
     const url = new URL(request.url);
-    
+
     event.respondWith(
       fetch(url.toString(), {
         method: "POST",
-      }).then((networkResponse) => {
-        if (
-          !networkResponse ||
-          !networkResponse.ok ||
-          request.headers.get("range") === "bytes=0-1"
-        ) {
-          return networkResponse;
-        }
-
-        const responseClone = networkResponse.clone();
-
-        self.clients.matchAll({ includeUncontrolled: true }).then((clients) => {
-          responseClone.blob().then((blob) => {
-            clients.forEach((client) => {
-              client.postMessage({
-                type: "ADD_TO_CACHE",
-                url: originalUrl,
-                blob: blob,
-              });
-            });
-          });
-        });
-
-        return networkResponse;
       })
+        .then((networkResponse) => {
+          if (
+            !networkResponse ||
+            !networkResponse.ok ||
+            request.headers.get("range") === "bytes=0-1"
+          ) {
+            return networkResponse;
+          }
+
+          const responseClone = networkResponse.clone();
+
+          self.clients.matchAll({ includeUncontrolled: true }).then((clients) => {
+            responseClone
+              .blob()
+              .then((blob) => {
+                clients.forEach((client) => {
+                  try {
+                    client.postMessage({
+                      type: "ADD_TO_CACHE",
+                      url: originalUrl,
+                      blob: blob,
+                    });
+                  } catch {
+                    // Ignore message dispatch error
+                  }
+                });
+              })
+              .catch(() => {});
+          }).catch(() => {});
+
+          return networkResponse;
+        })
+        .catch(() => {
+          // Fall back gracefully to direct request
+          return fetch(request);
+        })
     );
   }
 });

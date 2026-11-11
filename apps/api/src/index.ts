@@ -29,6 +29,32 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', uptime: process.uptime() });
 });
 
+// In-memory cache map for synthesized audio to prevent redundant TTS synthesis
+const audioCache = new Map<string, string>();
+
+app.post(
+  '/signed-url',
+  zValidator(
+    'json',
+    z.object({
+      name: z.string().min(1),
+      size: z.number().positive(),
+      type: z.string().startsWith('image/'),
+    })
+  ),
+  async (c) => {
+    const { name, type } = c.req.valid('json');
+    const fileKey = `uploads/${crypto.randomUUID()}-${name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+
+    // Return structured presigned upload descriptor
+    return c.json({
+      url: `/upload/${fileKey}`,
+      key: fileKey,
+      mimeType: type,
+    });
+  }
+);
+
 app.post(
   '/describe',
   zValidator(
@@ -54,8 +80,20 @@ app.post(
 async function handleSpeakRequest(c: any, text: string) {
   c.header('Content-Type', 'audio/wav');
   c.header('Content-Disposition', 'inline; filename="audio.wav"');
-  c.header('Cache-Control', 'no-cache');
+  c.header('Cache-Control', 'public, max-age=86400');
   c.header('Transfer-Encoding', 'chunked');
+
+  const textHash = crypto.createHash('md5').update(text.trim()).digest('hex');
+  const cachedPath = audioCache.get(textHash);
+
+  if (cachedPath && fs.existsSync(cachedPath)) {
+    return stream(c, async (stream) => {
+      const readableStream = fs.createReadStream(cachedPath);
+      for await (const chunk of readableStream) {
+        stream.write(chunk);
+      }
+    });
+  }
 
   return stream(c, async (stream) => {
     let outputFile = '';
@@ -71,6 +109,9 @@ async function handleSpeakRequest(c: any, text: string) {
       }
 
       if (fs.existsSync(wavFile)) {
+        // Cache the synthesized file for subsequent identical queries
+        audioCache.set(textHash, wavFile);
+
         const readableStream = fs.createReadStream(wavFile);
         for await (const chunk of readableStream) {
           stream.write(chunk);
@@ -79,14 +120,9 @@ async function handleSpeakRequest(c: any, text: string) {
     } catch (err) {
       console.error('TTS synthesis error:', err);
     } finally {
-      if (outputFile && fs.existsSync(outputFile)) {
+      if (outputFile && outputFile !== wavFile && fs.existsSync(outputFile)) {
         try {
           fs.unlinkSync(outputFile);
-        } catch {}
-      }
-      if (wavFile && wavFile !== outputFile && fs.existsSync(wavFile)) {
-        try {
-          fs.unlinkSync(wavFile);
         } catch {}
       }
     }
